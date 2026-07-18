@@ -12,6 +12,6 @@ class Settings:
     ALGORITHM:str = os.getenv("ALGORITHM") # algorithme utilisé pour le token JWT 
     ACCESS_TOKEN_EXPIRE_MINUTES:int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))  # Valeur par défaut si la variable d'environnement n'est pas définie
     LLM_API_KEY:str = os.getenv("LLM_API_KEY") # clé API pour l'accès au modèle de langage (LLM)
-    POSTGRE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}" # URL de connexion à la base de données PostgreSQL
+    POSTGRE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}" # URL de connexion à la base de données PostgreSQL
 
 settings = Settings()
