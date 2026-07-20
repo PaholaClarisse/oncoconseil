@@ -2,12 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from fastapi.security import OAuth2PasswordRequestForm
-from app.services.auth import hash_password, verify_password, create_access_token, get_current_user
+from app.services.auth import hash_password, verify_password, create_access_token, get_current_user, oauth2_scheme
 from app.schemas.user import UserCreate, UserOut, UserLogin
 from datetime import datetime
 from app.models.user import User
 from app.database import get_db
-
+from jose import jwt, JWTError
+from app.config import settings
+from app.models.blacklistToken import BlacklistToken
 router = APIRouter()
 
 
@@ -59,4 +61,20 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
 def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user
 
+@router.post("/logout")
+def logout_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    # Implementation for logout functionality
+    try:
+        decoded_jwt = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
+    jti = decoded_jwt.get("jti")
+    exp = decoded_jwt.get("exp")
+    expired_at = datetime.utcfromtimestamp(exp) 
+    blacklist_token = BlacklistToken(jti=jti, expired_at=expired_at)
+    db.add(blacklist_token) 
+    db.commit()
+
+    return {"message": "Utilisateur déconnecté avec succès"}
+    
 
