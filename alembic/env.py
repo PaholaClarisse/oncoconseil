@@ -16,7 +16,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from app.config import settings
 from app.database import Base
 from app.models.user import User  # important : importe chaque modèle pour qu'Alembic les détecte
-
+from app.models.blacklistToken import BlacklistToken
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 
