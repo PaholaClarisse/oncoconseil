@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.routes import auth
 from app.routes import admin
+from app.routes import chat
 
 app = FastAPI(title="OncoConseil", description="API backend avec llm", version="1.0.0")
 
@@ -10,3 +11,4 @@ def read_root():
 
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+app.include_router(chat.router, prefix="/chat", tags=["Chat"])
