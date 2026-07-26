@@ -10,7 +10,7 @@ def search_relevant_chunks(question: str, n_results: int = 3):
     results = collection.query(query_embeddings=[question_embedding],n_results=n_results)
     return results # retourne les chunks pertinents et leurs distances par rapport à la question
 
-SIMILARITY_THRESHOLD = 0.5
+SIMILARITY_THRESHOLD = 0.65
 # fonction pour vérifier si la meilleure distance est inférieure au seuil de similarité
 def is_within_scope(distances: list) -> bool:
     meilleure_distance = distances[0][0]
