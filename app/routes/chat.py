@@ -9,31 +9,34 @@ from app.services.auth import get_current_user
 from app.models.user import User
 from typing import List
 from app.schemas.message import MessageOut
+from fastapi import Request
+from app.rate_limiter import limiter
 
 router = APIRouter()
 
 @router.post("/ask")
-def ask_question(request: ChatRequest, db: DBSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+@limiter.limit("5/minute")
+def ask_question(request: Request,chat_request: ChatRequest, db: DBSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     # creer ou reutiliser une session existante pour l'utilisateur
-    if request.session_id is None:
-        new_session = Session(user_id=current_user.id, title= request.question[:50])  # Utiliser les 50 premiers caractères de la question comme titre
+    if chat_request.session_id is None:
+        new_session = Session(user_id=current_user.id, title= chat_request.question[:50])  # Utiliser les 50 premiers caractères de la question comme titre
         db.add(new_session)
         db.commit()
         db.refresh(new_session)
         session = new_session
 
     else:
-        session= db.query(Session).filter(Session.id == request.session_id).first()
+        session= db.query(Session).filter(Session.id == chat_request.session_id).first()
         if session is None:
             raise HTTPException(status_code=404, detail="Session introuvable")
 
     # Persister la question de l'utilisateur
-    user_message = Message(session_id=session.id, role=MessageRole.USER, content=request.question)
+    user_message = Message(session_id=session.id, role=MessageRole.USER, content=chat_request.question)
     db.add(user_message)
     db.commit()
 
     # Obtenir la réponse via le pipeline RAG
-    reponse_texte = answer_question(request.question)
+    reponse_texte = answer_question(chat_request.question)
 
     # Persister la réponse
     assistant_message = Message(session_id=session.id, role=MessageRole.ASSISTANT, content=reponse_texte)
