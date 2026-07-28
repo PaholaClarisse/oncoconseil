@@ -4,10 +4,11 @@ from app.database import get_db
 from app.schemas.chat import ChatRequest
 from app.models.message import Message, MessageRole
 from app.models.session import Session 
-from app.schemas.chat import ChatRequest
 from app.services.chat_service import answer_question
 from app.services.auth import get_current_user
 from app.models.user import User
+from typing import List
+from app.schemas.message import MessageOut
 
 router = APIRouter()
 
@@ -43,3 +44,34 @@ def ask_question(request: ChatRequest, db: DBSession = Depends(get_db), current_
         "session_id": session.id,
         "response": reponse_texte
     }
+
+@router.get("/history/{session_id}", response_model=List[MessageOut])
+def get_session_messages(session_id: int,current_user: User = Depends(get_current_user),db: DBSession = Depends(get_db)):
+    session = db.query(Session).filter(Session.id == session_id).first()
+
+    if session is None or session.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Session introuvable")
+
+    messages = db.query(Message).filter(Message.session_id == session_id).order_by(Message.created_at.asc()).all()
+    return messages
+
+@router.delete("/history/{session_id}")
+def delete_session(session_id: int, current_user: User = Depends(get_current_user), db: DBSession = Depends(get_db)):
+    # Récupérer la session correspondant à cet id
+    session = db.query(Session).filter(Session.id == session_id).first()
+
+    # Sécurité : même erreur générique (404) que la session n'existe pas
+    # ou qu'elle appartienne à un autre utilisateur — évite toute fuite d'information
+    if session is None or session.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Session introuvable")
+
+    # Supprimer d'abord tous les messages liés à cette session
+    # (obligatoire à cause de la contrainte ForeignKey : PostgreSQL refuserait
+    # de supprimer la session tant que des messages y font encore référence)
+    messages = db.query(Message).filter(Message.session_id == session_id).delete()
+
+    # Supprimer ensuite la session elle-même
+    db.delete(session)
+    db.commit()
+
+    return {"message": "Session supprimée avec succès"}
