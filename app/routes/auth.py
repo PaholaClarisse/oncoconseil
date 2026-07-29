@@ -43,11 +43,11 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     # 1. Vérifier si l'utilisateur existe
     existing_user = db.query(User).filter(User.email == form_data.username).first()
     if not existing_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur non trouvé")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="email ou mot de passe incorrect")
 
     # 2. Vérifier le mot de passe
     if not verify_password(form_data.password, existing_user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Mot de passe incorrect")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="email ou Mot de passe incorrect")
 
     # 3. Générer un token JWT
     access_token = create_access_token(data={"sub": str(existing_user.id)})
