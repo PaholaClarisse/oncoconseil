@@ -69,7 +69,6 @@ orjson==3.11.5
 overrides==7.7.0
 packaging==24.2
 passlib==1.7.4
-pkg_resources==0.0.0
 pluggy==1.6.0
 posthog==3.6.6
 proto-plus==1.27.2
