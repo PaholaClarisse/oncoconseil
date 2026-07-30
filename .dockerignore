@@ -1,0 +1,10 @@
+venv/
+venv_onco/
+venv_old_py38/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.env
+requirements_old_backup.txt
+chroma_data/
