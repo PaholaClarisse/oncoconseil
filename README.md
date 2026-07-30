@@ -153,3 +153,10 @@ Le pipeline de réponse (recherche vectorielle → scope-guard → prompt → ap
 ## 🌳 Stratégie Git
 
 Une branche par fonctionnalité (`feature/<nom>`), fusionnée dans `main` via Pull Request une fois testée et validée.
+
+## Lancer le projet
+
+1. Copier `.env.example` vers `.env` et remplir les valeurs
+2. `docker compose up --build`
+3. Dans un autre terminal : `docker compose exec api alembic upgrade head`
+4. Accéder à l'API : http://localhost:8000/docs
