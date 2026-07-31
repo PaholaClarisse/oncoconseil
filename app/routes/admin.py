@@ -50,10 +50,7 @@ def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db))
     }
 
 @router.get("/documents", response_model=list[DocumentOut])
-def list_documents(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def list_documents(current_user: User = Depends(get_current_user),db: Session = Depends(get_db)):
     documents = db.query(Document).all()
     return documents
 
