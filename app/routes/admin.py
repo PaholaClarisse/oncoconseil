@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.post("/documents")
 @router.post("/documents")
-def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db)):
+def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     temp_path = f"/tmp/{file.filename}"
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
