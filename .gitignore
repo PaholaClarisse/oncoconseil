@@ -8,5 +8,4 @@ venv_onco/
 __pycache__/
 *.pyc
 chroma_data/
-venv+onco
 
