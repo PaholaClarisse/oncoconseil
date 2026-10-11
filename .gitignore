@@ -1,3 +1,8 @@
+
+*.swp
+*.save
+*O
+~
 venv_onco/
 .env
 __pycache__/
