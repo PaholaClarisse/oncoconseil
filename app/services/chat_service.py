@@ -4,8 +4,13 @@ import google.generativeai as genai
 from app.config import settings
 genai.configure(api_key=settings.LLM_API_KEY)
 
+class KnowledgeBaseEmptyError(Exception):
+    pass
+
 # fonction pour rechercher les chunks pertinents à partir d'une question
 def search_relevant_chunks(question: str, n_results: int = 3):
+    if collection.count() == 0:
+        raise KnowledgeBaseEmptyError()
     question_embedding = generate_embedding(question)
     results = collection.query(query_embeddings=[question_embedding],n_results=n_results)
     return results # retourne les chunks pertinents et leurs distances par rapport à la question

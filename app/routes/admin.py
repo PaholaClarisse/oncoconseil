@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Depends
+from fastapi import APIRouter, UploadFile, File, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.document import Document
@@ -8,19 +8,30 @@ import shutil
 from app.services.auth import get_current_user
 from app.models.user import User
 from app.schemas.document import DocumentOut
+import os
+from pathlib import Path
 
 router = APIRouter()
 
 @router.post("/documents")
-@router.post("/documents")
 def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    temp_path = f"/tmp/{file.filename}"
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    #temp_path = f"/tmp/{file.filename}"
+    nom_sur = Path(file.filename).name
+    temp_path = f"/tmp/{nom_sur}"
 
-    texte = extract_text_from_pdf(temp_path)
+    try:
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        texte = extract_text_from_pdf(temp_path)
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
     chunks = split_into_chunks(texte)
 
+    existing = db.query(Document).filter(Document.name == file.filename).first()
+    if existing is not None:
+        raise HTTPException(status_code=409, detail="Ce document existe déjà")
     new_document = Document(name=file.filename, nombre_chunks=len(chunks))
     db.add(new_document)
     db.commit()

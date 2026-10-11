@@ -22,7 +22,7 @@ def extract_text_from_pdf(file_path: str) -> str:
     reader = PdfReader(file_path)
     full_text = ""
     for page in reader.pages:
-        full_text += page.extract_text() + " "
+        full_text += (page.extract_text() or "") + " " 
     return full_text
 
 def generate_embedding(text: str) -> list: # fonction pour générer un vecteur d'embedding à partir d'un texte

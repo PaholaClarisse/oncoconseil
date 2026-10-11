@@ -70,6 +70,11 @@ def logout_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_d
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
     jti = decoded_jwt.get("jti")
     exp = decoded_jwt.get("exp")
+
+    deja_blackliste = db.query(BlacklistToken).filter(BlacklistToken.jti == jti).first()
+    if deja_blackliste is not None:
+        return {"message": "Utilisateur déjà déconnecté"}
+
     expired_at = datetime.utcfromtimestamp(exp) 
     blacklist_token = BlacklistToken(jti=jti, expired_at=expired_at)
     db.add(blacklist_token) 

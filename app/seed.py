@@ -37,6 +37,8 @@ def seed():
             # Déjà indexé : on ne fait rien (c'est ce qui rend le seed
             # "idempotent" : le lancer 1 ou 10 fois donne le même résultat,
             # et ça évite des appels inutiles à Gemini).
+            resultat = collection.get(where={"document_id": existing.id}, limit=1)
+            if resultat["ids"]:
             print(f"Corpus '{CORPUS_NAME}' déjà indexé, rien à faire.")
             return
 

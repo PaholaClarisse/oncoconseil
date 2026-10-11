@@ -4,7 +4,7 @@ from app.database import get_db
 from app.schemas.chat import ChatRequest
 from app.models.message import Message, MessageRole
 from app.models.session import Session 
-from app.services.chat_service import answer_question
+from app.services.chat_service import answer_question, KnowledgeBaseEmptyError
 from app.services.auth import get_current_user
 from app.models.user import User
 from typing import List
@@ -26,8 +26,8 @@ def ask_question(request: Request,chat_request: ChatRequest, db: DBSession = Dep
         session = new_session
 
     else:
-        session= db.query(Session).filter(Session.id == chat_request.session_id).first()
-        if session is None:
+        session = db.query(Session).filter(Session.id == chat_request.session_id).first()
+        if session is None or session.user_id != current_user.id:
             raise HTTPException(status_code=404, detail="Session introuvable")
 
     # Persister la question de l'utilisateur
@@ -36,7 +36,10 @@ def ask_question(request: Request,chat_request: ChatRequest, db: DBSession = Dep
     db.commit()
 
     # Obtenir la réponse via le pipeline RAG
-    reponse_texte = answer_question(chat_request.question)
+    try:
+        reponse_texte = answer_question(chat_request.question)
+    except KnowledgeBaseEmptyError:
+        raise HTTPException(status_code=503,detail="La base de connaissances est temporairement indisponible, veuillez réessayer plus tard.")
 
     # Persister la réponse
     assistant_message = Message(session_id=session.id, role=MessageRole.ASSISTANT, content=reponse_texte)
