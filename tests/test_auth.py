@@ -4,3 +4,7 @@ def test_login_mauvais_mot_de_passe(client):
         "password": "mauvais_mot_de_passe",
     })
     assert response.status_code == 401
+
+def test_me_sans_token(client):
+    response = client.get("/auth/me")
+    assert response.status_code == 401
