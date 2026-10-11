@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: recuperer le code
-         uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
 
       - name: installer python
-         uses: actions/setup-python@v5
+        uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 
@@ -22,6 +22,6 @@ jobs:
       - name: installer les dependances 
         run: python -m pip install -r requirements.txt
 
-        
+
       - name : lancer des tests
         run: python -m pytest tests/
